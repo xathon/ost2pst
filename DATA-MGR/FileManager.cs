@@ -208,7 +208,7 @@ namespace ost2pst
         {
             UInt64 subnode = 0;
             if (sn.bidSub > 0)
-            {   
+            {
                 BREF snBref = Blocks.CopySubnode(sn.bidSub);
                 subnode = snBref.bid;
             }
@@ -243,7 +243,8 @@ namespace ost2pst
             if (tcBTHs.subnodes.Count > 0)
             {
                 slTC.bidSub = Blocks.AddSLentries(tcBTHs.subnodes).bid;
-            };
+            }
+            ;
             List<byte[]> tcHNblocks = LTP.GetBTHhnDatablocks(tcBTHs, EbType.bTypeTC);
             slTC.bidData = AddSubnode(tcHNblocks);
             return slTC;
@@ -254,7 +255,7 @@ namespace ost2pst
             TableContext tc = LTP.ReadSubnodeTC(srcFile.stream, sn);
             BTH tcBTHs = new BTH(tc);
             if (sn.bidSub > 0)
-            {   
+            {
                 List<byte[]> data = new();
                 List<SLENTRY> pstSN = new List<SLENTRY>();
                 List<SLENTRY> ostSN = FM.srcFile.GetSLentries(sn.bidSub);
@@ -294,7 +295,7 @@ namespace ost2pst
             TableContext tc = LTP.ReadSubnodeTCandRefreshIndex(srcFile.stream, sn);
             BTH tcBTHs = new BTH(tc);
             if (sn.bidSub > 0)
-            {   
+            {
                 List<byte[]> data = new();
                 List<SLENTRY> pstSN = new List<SLENTRY>();
                 List<SLENTRY> ostSN = FM.srcFile.GetSLentries(sn.bidSub);
@@ -362,18 +363,18 @@ namespace ost2pst
                 dwValueHnid = new HNID(0)
             };
             props[ixPW] = new(pc);
-            BTH pcBTHs = new BTH(props);  
+            BTH pcBTHs = new BTH(props);
             List<byte[]> pcHNblocks = LTP.GetBTHhnDatablocks(pcBTHs, EbType.bTypePC);
             outFile.AddNDB(nbt, pcHNblocks, 0);  // no subnode for PC on a message store
         }
         public static void RefreshMessagePC(NBTENTRY nbt)
         {
-            List<Property> props = LTP.ReadPCs(srcFile.stream,nbt);
+            List<Property> props = LTP.ReadPCs(srcFile.stream, nbt);
             UInt64 subnode = 0;
             UInt32 ms = 0;
             int pSix = props.FindIndex(p => p.id == EpropertyId.PidTagMessageSize);
             msgSize? mSize = msgSizes.Find(m => m.nid == nbt.nid.dwValue);
-            if (mSize == null || pSix <0) { throw new Exception($"missing message size nid {nbt.nid.dwValue}"); }
+            if (mSize == null || pSix < 0) { throw new Exception($"missing message size nid {nbt.nid.dwValue}"); }
             Property prop = props[pSix];
             ms = ExtractTypeFromArray<UInt32>(prop.data);
             if (mSize.size != ms)
@@ -406,7 +407,7 @@ namespace ost2pst
             for (int i = 0; i < tc.tcRowIndexes.Count; i++)
             {
                 msgSize? mSize = msgSizes.Find(m => m.nid == tc.tcRowIndexes[i].dwRowID);
-                if (mSize == null ) continue;   // row id is not message nid
+                if (mSize == null) continue;   // row id is not message nid
                 RowData rd = tc.tcRowMatrix[i];
                 int pSix = rd.Props.FindIndex(p => p.id == EpropertyId.PidTagMessageSize);
                 Property prop = rd.Props[pSix];
@@ -422,22 +423,23 @@ namespace ost2pst
                     };
                     rd.Props[pSix] = new(pc);
                 }
-            }   
+            }
             return hasChanged;
         }
 
         public static void RefreshContentTableTC(NBTENTRY nbt)
-        {   
+        {
             TableContext tc = LTP.ReadTCs_and_rowdata(srcFile.stream, nbt);
             if (MsgSizeChanged(tc))
             {
                 BTH tcBTHs = new BTH(tc, true);
                 UInt64 subnode = 0;
                 if (tcBTHs.subnodes.Count > 0)
-                {  
+                {
                     BREF snBREF = Blocks.AddSLentries(tcBTHs.subnodes);
                     subnode = snBREF.bid;
-                };
+                }
+                ;
                 List<byte[]> tcHNblocks = LTP.GetBTHhnDatablocks(tcBTHs, EbType.bTypeTC);
                 outFile.AddNDB(nbt, tcHNblocks, subnode);
             }
@@ -467,10 +469,11 @@ namespace ost2pst
             BTH tcBTHs = new BTH(tc, true);
             UInt64 subnode = 0;
             if (tcBTHs.subnodes.Count > 0)
-            {  
+            {
                 BREF snBREF = Blocks.AddSLentries(tcBTHs.subnodes);
                 subnode = snBREF.bid;
-            };
+            }
+            ;
             List<byte[]> tcHNblocks = LTP.GetBTHhnDatablocks(tcBTHs, EbType.bTypeTC);
             outFile.AddNDB(nbt, tcHNblocks, subnode);
         }
@@ -504,7 +507,7 @@ namespace ost2pst
             foreach (SLENTRY s in srcSubnodes)
             {
                 bidSubSize += bidDataSize(s.bidData);
-                if (s.bidSub >0) bidSubSize += bidSubDataSize(s.bidSub);
+                if (s.bidSub > 0) bidSubSize += bidSubDataSize(s.bidSub);
             }
             return bidSubSize;
         }
@@ -545,19 +548,19 @@ namespace ost2pst
             for (int i = 0; i < srcFile.NBTs.Count; i++)
             {
                 NBTENTRY nbt = srcFile.NBTs[i];
-                Program.mainForm.statusMSG($"Exporting NBT entry {i+1} out of {srcFile.NBTs.Count}",false);
+                Program.mainForm.statusMSG($"Exporting NBT entry {i + 1} out of {srcFile.NBTs.Count}", false);
                 if (nbt.nid.nidType == EnidType.NORMAL_MESSAGE)
                 {
-                   RefreshMessagePC(nbt);
+                    RefreshMessagePC(nbt);
                 }
                 else
                 {
-                   if (nbt.nid.nidType == EnidType.CONTENTS_TABLE)
-                   {
-                       RefreshContentTableTC(nbt);
-                   }
-                   else
-                   {
+                    if (nbt.nid.nidType == EnidType.CONTENTS_TABLE)
+                    {
+                        RefreshContentTableTC(nbt);
+                    }
+                    else
+                    {
                         if (nbt.bidData == 0)
                         {
                             outFile.NBTs.Add(nbt); // nbt without data just copy the entry
@@ -571,6 +574,7 @@ namespace ost2pst
                             else
                             {
                                 outFile.CopyNDB(nbt);
+                                FixContentTableIndexNBT(nbt);
                             }
                         }
                     }
@@ -578,7 +582,7 @@ namespace ost2pst
             }
         }
 
-        public static void CopySourceDatablocksToPST(string folderToExport, string filename)
+        public static void CopySourceDatablocksToPST(UInt32 folderToExport, string filename)
         {
             Folder expFolder = CheckFoldersToExport(folderToExport);
             RQS.BuildPSTobjects(expFolder, filename);
@@ -607,20 +611,28 @@ namespace ost2pst
                             else
                             {
                                 outFile.CopyNDB(nbt);
-                                if (nbt.nid.nidType == EnidType.CONTENTS_TABLE_INDEX)
-                                {
-                                    unsafe
-                                    {
-                                        outFile.header.rgnid[3] = outFile.header.rgnid[19];  // strange error in scanpst
-                                    }
-                                }
+                                FixContentTableIndexNBT(nbt);
                             }
                         }
                     }
                 }
             }
         }
-        public static Folder CheckFoldersToExport(string folderToExport)
+        private static void FixContentTableIndexNBT(NBTENTRY nbt)
+        {
+            // THIS IS A WORKAROUND FOR A SCANPST ISSUE
+            // scanpst expects that rgnid[3] = rgnid[19] when a CONTENTS_TABLE_INDEX is present
+            // outloolk seems to not care about this... so we fix it here just for scanpst compatibility
+            if (nbt.nid.nidType == EnidType.CONTENTS_TABLE_INDEX)
+            {   // fix 
+                unsafe
+                {
+                    outFile.header.rgnid[3] = outFile.header.rgnid[19];  // strange error in scanpst
+                }
+
+            }
+        }
+        public static Folder CheckFoldersToExport(UInt32 folderToExport)
         {
             GetFolderList();
             Folder expFolder = SelectFoldersToExport(folderToExport);
@@ -630,16 +642,12 @@ namespace ost2pst
             expFolder.properties = LTP.ReadPCs(srcFile.stream, nbtFolder);
             return expFolder;
         }
-        private static Folder SelectFoldersToExport(string topFolder)
+        private static Folder SelectFoldersToExport(UInt32 topFolder)
         {
-            int fIx = folders.FindIndex(f => f.name == topFolder);
+            int fIx = folders.FindIndex(f => f.nid.dwValue == topFolder);
             if (fIx < 0)
-            {  // need to confirm whether deleled items folder is always present
-                fIx = folders.FindIndex(f => f.path == topFolder);
-                if (fIx < 0)
-                {
-                    throw new Exception($"Selected folder: {topFolder} not found in the OST file");
-                }
+            {   // it should never happen!!!
+                throw new Exception($"Selected folder: {topFolder} not found in the OST file");
             }
             MarkSubfoldersToExport(folders[fIx]); ;
             return folders[fIx];
@@ -648,6 +656,7 @@ namespace ost2pst
         {
             folder.toBeExported = true;
             if (folder.name == "IPM_COMMON_VIEWS") return;  // scanpst remo
+            if (folder.parent.nid.dwValue == folder.nid.dwValue) return;  // root folder
             foreach (Folder f in folders)
             {
                 if (f.parent.nid.dwValue == folder.nid.dwValue)
@@ -807,26 +816,31 @@ namespace ost2pst
             if (nidIx > outFile.header.rgnid[nidType]) { outFile.header.rgnid[nidType] = nidIx; }
         }
         public static void UpdateSubnodeNIDheaderIndex(UInt32 nid)
-        {   // PSTSCAN seems to check the highmarks of specific subnode nid type
-            // this is not documented and outlook don't have a problem with it
+        {   // SCANSPT seems to check the highmarks of specific subnode nid types
+            // this does not comply with MS-PST documentation (2.6.1.2.2 Creating or Adding a Subnode Entry):
+            // ... NIDs for subnodes are internal and therefore NOT allocated from the rgnid[nidType] counter in the HEADER.
+            // 
+            // this code is just avoid erros flagged by SCANPST
             int nidType = (int)nid % 32;
             switch (nidType)
             {
+                case 0:
                 case 1:
                 case 3:
                 case 4:
                 case 5:
+                case 7:
                 case 8:
                 case 9:
                 case 13:
-                // case 18:
+                case 18:
                 case 19:
                 case 20:
                 case 21:
                 case 22:
-
                 case 24:
                 case 27:
+                case 28:
                 case 29:
                 case 31:
                     UpdateNIDheaderIndex(nid);

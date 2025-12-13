@@ -6,8 +6,16 @@ namespace ost2pst
 {
     public partial class ost2pst : Form
     {
-        private const string version = "1.0 (Jul-2025)"; // Version of the application
-        private string folderToExport = string.Empty;
+        private const string version = "1.0.1 (Nov-2025)"; // Version of the application
+        /*
+         * v1.0.1 (Nov-2025)
+         * - fixed issue looping on the function: ost2pst.FM.MarkSubfoldersToExport
+         *      - folder tree will check on folder's NID value (instead of name) to avoid looping on duplicate folder names
+         *      - looping issue was caused by folders with duplicate names pointing to each other as parent/child
+         *      - root ost folder parent points to itself causing infinite loop
+         */
+        //private string folderToExport = string.Empty;
+        private UInt32 folderToExport = 0;    // NID of the folder to export 
         private bool treeViewEnabled = false; // Flag to check if the tree view is enabled  
         public ost2pst()
         {
@@ -74,13 +82,13 @@ namespace ost2pst
             var selectedFolder = e.Node.Tag as Folder;
             if (selectedFolder != null)
             {
-                folderToExport = selectedFolder.name;
-                exportPST.Text = $"Export \" {folderToExport} \" to PST";
+                folderToExport = selectedFolder.nid.dwValue;
+                exportPST.Text = $"Export \" {selectedFolder.name} \" to PST";
                 exportPST.Enabled = true; // Enable the export button when a folder is selected
             }
             else
             {
-                folderToExport = string.Empty; // Reset if no folder is selected
+                folderToExport = 0; // Reset if no folder is selected
                 exportPST.Text = $"Select folder to export";
                 exportPST.Enabled = false; // Enable the export button when a folder is selected
             }
@@ -169,6 +177,7 @@ namespace ost2pst
                             FM.exportBBTnodes();
                             FM.updateNidHighWaterMarks();
                             FM.CloseOutputFile();
+                            FM.CloseSourceFile();
                             statusMSG($"export completed");
                         }
                         pstDetails.Text = FM.OutputFileDetails();
